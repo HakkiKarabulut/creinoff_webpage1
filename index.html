@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creinoff - Modern Yazılım Çözümleri</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/logo-bw.png">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                    <img src="assets/logo-bw.png" alt="Creinoff Logo" style="height: 40px;">
+                    Creinoff.
+                </div>
+                <div class="nav-links" id="navLinks">
+                    <a href="#home">Ana Sayfa</a>
+                    <a href="#about">Hakkımızda</a>
+                    <a href="#projects">Projeler</a>
+                    <a href="#contact">İletişim</a>
+                </div>
+                <div class="mobile-menu-btn" id="menuBtn">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Fikirlerinizi Dijital Gerçekliğe Dönüştürüyoruz</h1>
+                <p>Creinoff, modern teknolojiler ve yaratıcı tasarımlarla işletmenizi geleceğe taşır. Yazılım dünyasında
+                    fark yaratmak için buradayız.</p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="btn">Bizimle Tanışın</a>
+                    <a href="#projects" class="btn btn-outline">Projelerimiz</a>
+                </div>
+            </div>
+            <!-- Illustration will be handled via CSS background or positioned image if complex -->
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>Biz Kimiz?</h2>
+            </div>
+            <div class="about-grid">
+                <div class="about-image">
+                    <img src="assets/hero.png" alt="Creinoff Ofis Kültürü"
+                        style="width: 100%; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                </div>
+                <div class="about-text">
+                    <p>Creinoff, kullanıcı deneyimini merkeze alan, estetik ve işlevselliği birleştiren bir yazılım
+                        firmasıdır. Genç ve dinamik ekibimizle, web ve mobil uygulama geliştirme süreçlerinde yenilikçi
+                        çözümler sunuyoruz.</p>
+                    <p>Amacımız sadece kod yazmak değil; markanızın dijital dünyadaki hikayesini en etkileyici şekilde
+                        anlatmaktır.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <h3>50+</h3>
+                            <span>Proje</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>30+</h3>
+                            <span>Mutlu Müşteri</span>
+                        </div>
+                        <div class="stat-item">
+                            <h3>5</h3>
+                            <span>Yıl Deneyim</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="projects">
+        <div class="container">
+            <div class="section-title">
+                <h2>Projelerimiz</h2>
+            </div>
+            <div class="projects-grid">
+                <!-- Project 1 -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <!-- Placeholder for project image -->
+                        <div
+                            style="width:100%; height:100%; background: #e0f2fe; display: flex; align-items: center; justify-content: center; color: #7dd3fc; font-size: 3rem;">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-tags">
+                            <span class="tag">E-Ticaret</span>
+                            <span class="tag">Web Tasarım</span>
+                        </div>
+                        <h3>Moda E-Ticaret Platformu</h3>
+                        <p>Kullanıcı dostu arayüzü ve gelişmiş ödeme sistemleri ile modern bir alışveriş deneyimi.</p>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <!-- Placeholder for project image -->
+                        <div
+                            style="width:100%; height:100%; background: #dcfce7; display: flex; align-items: center; justify-content: center; color: #86efac; font-size: 3rem;">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-tags">
+                            <span class="tag">Mobil Uygulama</span>
+                            <span class="tag">Sağlık</span>
+                        </div>
+                        <h3>Sağlıklı Yaşam Asistanı</h3>
+                        <p>Kişisel sağlık takibi ve randevu yönetimi sağlayan kapsamlı mobil uygulama.</p>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <!-- Placeholder for project image -->
+                        <div
+                            style="width:100%; height:100%; background: #fef9c3; display: flex; align-items: center; justify-content: center; color: #fde047; font-size: 3rem;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <div class="project-tags">
+                            <span class="tag">Kurumsal</span>
+                            <span class="tag">Finans</span>
+                        </div>
+                        <h3>Finans Yönetim Paneli</h3>
+                        <p>Şirket içi finansal verilerin analizi ve raporlanması için özel dashboard tasarımı.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>İletişime Geçin</h2>
+            </div>
+            <div class="contact-container">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Adınız Soyadınız</label>
+                        <input type="text" id="name" class="form-control" placeholder="Örn: Ahmet Yılmaz" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-posta Adresiniz</label>
+                        <input type="email" id="email" class="form-control" placeholder="örn: ahmet@mail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Mesajınız</label>
+                        <textarea id="message" class="form-control" placeholder="Projenizden bahsedin..."
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Gönder</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <h2>Creinoff.</h2>
+                <p>&copy; 2024 Creinoff Yazılım Çözümleri. Tüm hakları saklıdır.</p>
+                <div style="margin-top: 20px; font-size: 1.2rem;">
+                    <a href="#" style="margin: 0 10px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="margin: 0 10px;"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" style="margin: 0 10px;"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
