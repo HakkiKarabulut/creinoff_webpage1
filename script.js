@@ -52,4 +52,55 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = false;
         }, 1500);
     });
+
+    // Modal Logic
+    const modal = document.getElementById('projectModal');
+    const closeModal = document.querySelector('.close-modal');
+    const projectCards = document.querySelectorAll('.project-card');
+
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalCategory = document.getElementById('modalCategory');
+
+    projectCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Get data
+            const title = card.getAttribute('data-title');
+            const desc = card.getAttribute('data-desc');
+            const category = card.getAttribute('data-category');
+
+            // Set data
+            modalTitle.innerText = title;
+            modalDesc.innerText = desc;
+            modalCategory.innerText = category;
+
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+    });
+
+    // Close Modal functions
+    const closeMyModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Enable scrolling
+    }
+
+    closeModal.addEventListener('click', closeMyModal);
+
+    // Close when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeMyModal();
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeMyModal();
+        }
+    });
 });
