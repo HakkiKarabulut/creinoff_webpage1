@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creinoff Admin - Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="../assets/logo-bw.png">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo-bw.png" alt="Creinoff">
+                <span>Admin Panel</span>
+            </div>
+            <nav>
+                <a href="#" class="nav-item active" data-target="overview">
+                    <i class="fas fa-home"></i> Genel Bakış
+                </a>
+                <a href="#" class="nav-item" data-target="projects">
+                    <i class="fas fa-project-diagram"></i> Projeler
+                </a>
+                <a href="#" class="nav-item" data-target="messages">
+                    <i class="fas fa-envelope"></i> Mesajlar
+                </a>
+                <a href="#" class="nav-item" data-target="settings">
+                    <i class="fas fa-cog"></i> Ayarlar
+                </a>
+                <a href="#" class="nav-item logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h2 id="pageTitle">Genel Bakış</h2>
+                    <p id="pageDesc">Hoşgeldin, Admin!</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <span>Admin User</span>
+                </div>
+            </div>
+
+            <!-- SECTIONS -->
+
+            <!-- Overview Section -->
+            <section id="overview" class="content-section">
+                <!-- Stats Widgets -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e0f2fe; color: #0ea5e9;">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>1,250</h3>
+                            <p>Aylık Ziyaretçi</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #dcfce7; color: #16a34a;">
+                            <i class="fas fa-envelope-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>24</h3>
+                            <p>Yeni Mesaj</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fef9c3; color: #ca8a04;">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>12</h3>
+                            <p>Aktif Proje</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>4.9</h3>
+                            <p>Ortalama Puan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Projects Table (Subset) -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Son Projeler</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Proje Adı</th>
+                                <th>Kategori</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Moda E-Ticaret</td>
+                                <td>E-Ticaret</td>
+                                <td><span class="status-badge status-active">Yayında</span></td>
+                                <td>20.12.2024</td>
+                            </tr>
+                            <tr>
+                                <td>Sağlık Asistanı</td>
+                                <td>Mobil Uygulama</td>
+                                <td><span class="status-badge status-active">Yayında</span></td>
+                                <td>18.12.2024</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Projects Section -->
+            <section id="projects" class="content-section hidden">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Tüm Projeler</h3>
+                        <button class="btn" id="newProjectBtn" style="padding: 8px 20px; font-size: 0.9rem;">+ Yeni
+                            Proje</button>
+                    </div>
+                    <table class="data-table" id="projectsTable">
+                        <thead>
+                            <tr>
+                                <th>Proje Adı</th>
+                                <th>Kategori</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Moda E-Ticaret</td>
+                                <td>E-Ticaret</td>
+                                <td><span class="status-badge status-active">Yayında</span></td>
+                                <td>20.12.2024</td>
+                                <td>
+                                    <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sağlık Asistanı</td>
+                                <td>Mobil Uygulama</td>
+                                <td><span class="status-badge status-active">Yayında</span></td>
+                                <td>18.12.2024</td>
+                                <td>
+                                    <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Finans Paneli</td>
+                                <td>Kurumsal</td>
+                                <td><span class="status-badge status-pending">Geliştiriliyor</span></td>
+                                <td>15.12.2024</td>
+                                <td>
+                                    <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Messages Section -->
+            <section id="messages" class="content-section hidden">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Gelen Mesajlar</h3>
+                    </div>
+                    <div style="padding: 20px; text-align: center; color: #888;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+                        <p>Henüz yeni mesajınız yok.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section hidden">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Ayarlar</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div class="form-group">
+                            <label>Site Başlığı</label>
+                            <input type="text" class="form-control" value="Creinoff - Modern Yazılım Çözümleri">
+                        </div>
+                        <div class="form-group">
+                            <label>E-posta Adresi</label>
+                            <input type="email" class="form-control" value="info@creinoff.com">
+                        </div>
+                        <button class="btn">Kaydet</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- New Project Modal -->
+    <div id="newProjectModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2>Yeni Proje Ekle</h2>
+            </div>
+            <div class="modal-body">
+                <form id="newProjectForm">
+                    <div class="form-group">
+                        <label for="pName">Proje Adı</label>
+                        <input type="text" id="pName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pCategory">Kategori</label>
+                        <select id="pCategory" class="form-control">
+                            <option value="E-Ticaret">E-Ticaret</option>
+                            <option value="Mobil Uygulama">Mobil Uygulama</option>
+                            <option value="Kurumsal">Kurumsal</option>
+                            <option value="Eğitim">Eğitim</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pStatus">Durum</label>
+                        <select id="pStatus" class="form-control">
+                            <option value="active">Yayında</option>
+                            <option value="pending">Geliştiriliyor</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-full">Ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
