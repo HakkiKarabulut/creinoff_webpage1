@@ -80,6 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     pageTitle.innerText = titles[targetId][0];
                     pageDesc.innerText = titles[targetId][1];
                 }
+
+                // Load data based on tab
+                if (targetId === 'projects') loadProjects();
+                if (targetId === 'messages') loadMessages();
+                if (targetId === 'overview') loadStats();
             });
         });
 
@@ -88,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const openBtn = document.getElementById('newProjectBtn');
         const closeBtn = document.querySelector('.close-modal');
         const form = document.getElementById('newProjectForm');
-        const tableBody = document.querySelector('#projectsTable tbody');
 
         if (openBtn) {
             openBtn.addEventListener('click', () => {
@@ -111,65 +115,196 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add New Project
         if (form) {
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const name = document.getElementById('pName').value;
                 const category = document.getElementById('pCategory').value;
                 const status = document.getElementById('pStatus').value;
-                const date = new Date().toLocaleDateString('tr-TR');
+                const btn = form.querySelector('button');
 
-                const statusClass = status === 'active' ? 'status-active' : 'status-pending';
-                const statusText = status === 'active' ? 'Yayında' : 'Geliştiriliyor';
+                btn.disabled = true;
+                btn.innerText = 'Ekleniyor...';
 
-                const newRow = `
+                try {
+                    // Check if supabase is available
+                    if (typeof window.supabase === 'undefined') {
+                        throw new Error('Supabase bağlantısı kurulamadı. config.js dosyasını kontrol edin.');
+                    }
+
+                    // Insert into Supabase
+                    const { data, error } = await window.supabase
+                        .from('projects')
+                        .insert([
+                            { title: name, category: category, status: status }
+                        ])
+                        .select();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    modal.classList.remove('active');
+                    form.reset();
+                    loadProjects(); // Refresh table
+                } catch (err) {
+                    console.error('Project add error:', err);
+                    alert('Hata: ' + (err.message || err));
+                    if (err.message && err.message.includes('row-level security')) {
+                        alert('İPUCU: Supabase SQL Editor\'de public_access.sql kodlarını çalıştırmayı unuttunuz mu?');
+                    }
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'Ekle';
+                }
+            });
+        }
+
+        // Initial Load
+        loadStats();
+        loadProjects(); // Pre-load projects
+    }
+
+    // Data Loading Functions
+    async function loadProjects() {
+        const tableBody = document.querySelector('#projectsTable tbody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Yükleniyor...</td></tr>';
+
+        try {
+            if (typeof window.supabase === 'undefined') {
+                throw new Error('Supabase başlatılamadı.');
+            }
+
+            const { data: projects, error } = await window.supabase
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!projects || projects.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Henüz proje yok.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            projects.forEach(project => {
+                const date = new Date(project.created_at).toLocaleDateString('tr-TR');
+                const statusClass = project.status === 'active' ? 'status-active' : 'status-pending';
+                const statusText = project.status === 'active' ? 'Yayında' : 'Geliştiriliyor';
+
+                const row = `
                     <tr>
-                        <td>${name}</td>
-                        <td>${category}</td>
+                        <td>${project.title}</td>
+                        <td>${project.category}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${date}</td>
                         <td>
-                            <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn edit-btn" data-id="${project.id}"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete-btn" data-id="${project.id}"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
-
-                if (tableBody) {
-                    tableBody.insertAdjacentHTML('afterbegin', newRow);
-                    bindTableEvents();
-                }
-
-                modal.classList.remove('active');
-                form.reset();
+                tableBody.insertAdjacentHTML('beforeend', row);
             });
+
+            bindTableEvents();
+        } catch (err) {
+            console.error('Load projects error:', err);
+            tableBody.innerHTML = `<tr><td colspan="5" style="color:red;">Hata: ${err.message}</td></tr>`;
         }
+    }
 
-        // Bind Edit/Delete Events
-        function bindTableEvents() {
-            const deleteBtns = document.querySelectorAll('.delete-btn');
-            const editBtns = document.querySelectorAll('.edit-btn');
+    async function loadMessages() {
+        const container = document.querySelector('#messages .table-container');
 
-            deleteBtns.forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true));
-            });
+        try {
+            const { data: messages, error } = await window.supabase
+                .from('messages')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    if (confirm('Bu projeyi silmek istediğinize emin misiniz?')) {
+            if (error) {
+                throw error;
+            }
+
+            if (messages && messages.length > 0) {
+                let html = '<div class="table-header"><h3>Gelen Mesajlar</h3></div><table class="data-table"><thead><tr><th>İsim</th><th>E-posta</th><th>Mesaj</th><th>Tarih</th></tr></thead><tbody>';
+
+                messages.forEach(msg => {
+                    const date = new Date(msg.created_at).toLocaleDateString('tr-TR');
+                    html += `
+                        <tr>
+                            <td>${msg.name}</td>
+                            <td>${msg.email}</td>
+                            <td>${msg.message.substring(0, 50)}...</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `
+                    <div class="table-header"><h3>Gelen Mesajlar</h3></div>
+                    <div style="padding: 20px; text-align: center; color: #888;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
+                        <p>Henüz yeni mesajınız yok.</p>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('Load messages error:', err);
+            if (container) {
+                container.innerHTML = `<div style="color:red; padding:20px;">Mesajlar yüklenirken hata oluştu: ${err.message}</div>`;
+            }
+        }
+    }
+
+    async function loadStats() {
+        try {
+            // Simple counts
+            const { count: projectCount } = await window.supabase.from('projects').select('*', { count: 'exact', head: true });
+            const { count: messageCount } = await window.supabase.from('messages').select('*', { count: 'exact', head: true });
+
+            // Update UI if elements exist (assuming ids exist or need to be added)
+            // For now just logging
+            // console.log('Stats:', projectCount, messageCount);
+        } catch (err) {
+            console.error('Stats load error:', err);
+        }
+    }
+
+    function bindTableEvents() {
+        const deleteBtns = document.querySelectorAll('.delete-btn');
+        const editBtns = document.querySelectorAll('.edit-btn');
+
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', async function () {
+                if (confirm('Bu projeyi silmek istediğinize emin misiniz?')) {
+                    const id = this.getAttribute('data-id');
+                    try {
+                        const { error } = await window.supabase.from('projects').delete().eq('id', id);
+
+                        if (error) {
+                            throw error;
+                        }
                         this.closest('tr').remove();
+                    } catch (err) {
+                        alert('Silme hatası: ' + err.message);
                     }
-                });
+                }
             });
+        });
 
-            editBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    alert('Düzenleme özelliği henüz aktif değil.');
-                });
+        editBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                alert('Düzenleme özelliği henüz aktif değil.');
             });
-        }
-
-        // Initial bind
-        bindTableEvents();
+        });
     }
 });
