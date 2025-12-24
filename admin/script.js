@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                 `;
 
-                tableBody.insertAdjacentHTML('afterbegin', newRow);
-
-                // Re-bind events for new buttons
-                bindTableEvents();
+                if (tableBody) {
+                    tableBody.insertAdjacentHTML('afterbegin', newRow);
+                    bindTableEvents();
+                }
 
                 modal.classList.remove('active');
                 form.reset();
@@ -151,11 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const editBtns = document.querySelectorAll('.edit-btn');
 
             deleteBtns.forEach(btn => {
-                // Remove old listeners to avoid duplicates (simple way)
                 btn.replaceWith(btn.cloneNode(true));
             });
 
-            // Re-select after replacement
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     if (confirm('Bu projeyi silmek istediğinize emin misiniz?')) {
