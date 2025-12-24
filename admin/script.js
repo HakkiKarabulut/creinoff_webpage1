@@ -162,6 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initial Load
         loadStats();
+        loadStats();
+        loadRecentProjects(); // Load recent projects for overview
         loadProjects(); // Pre-load projects
     }
 
@@ -265,15 +267,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function loadRecentProjects() {
+        const tableBody = document.getElementById('recentProjectsTableBody');
+        if (!tableBody) return;
+
+        try {
+            const { data: projects, error } = await window.supabase
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
+            if (!projects || projects.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Henüz proje yok.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            projects.forEach(project => {
+                const date = new Date(project.created_at).toLocaleDateString('tr-TR');
+                const statusClass = project.status === 'active' ? 'status-active' : 'status-pending';
+                const statusText = project.status === 'active' ? 'Yayında' : 'Geliştiriliyor';
+
+                const row = `
+                    <tr>
+                        <td>${project.title}</td>
+                        <td>${project.category}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+        } catch (err) {
+            console.error('Load recent projects error:', err);
+            tableBody.innerHTML = `<tr><td colspan="4" style="color:red;">Hata: ${err.message}</td></tr>`;
+        }
+    }
+
     async function loadStats() {
         try {
             // Simple counts
             const { count: projectCount } = await window.supabase.from('projects').select('*', { count: 'exact', head: true });
             const { count: messageCount } = await window.supabase.from('messages').select('*', { count: 'exact', head: true });
+            const { count: activeProjectCount } = await window.supabase
+                .from('projects')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'active');
 
-            // Update UI if elements exist (assuming ids exist or need to be added)
-            // For now just logging
-            // console.log('Stats:', projectCount, messageCount);
+            // Update UI
+            const activeProjectEl = document.getElementById('stat-active-projects');
+            if (activeProjectEl) {
+                activeProjectEl.innerText = activeProjectCount || 0;
+            }
+
+            const messageCountEl = document.getElementById('stat-total-messages');
+            if (messageCountEl) {
+                messageCountEl.innerText = messageCount || 0;
+            }
+
+            // console.log('Stats:', projectCount, messageCount, activeProjectCount);
         } catch (err) {
             console.error('Stats load error:', err);
         }
