@@ -113,50 +113,92 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Add New Project
         if (form) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                const id = document.getElementById('pId').value;
                 const name = document.getElementById('pName').value;
                 const category = document.getElementById('pCategory').value;
                 const status = document.getElementById('pStatus').value;
+
+                const logoFile = document.getElementById('pLogo').files[0];
+                const site_url = document.getElementById('pSite').value;
+                const download_url = document.getElementById('pDownload').value;
+                const social_instagram = document.getElementById('pInsta').value;
+                const social_facebook = document.getElementById('pFace').value;
+                const social_x = document.getElementById('pX').value;
+
                 const btn = form.querySelector('button');
+                const originalText = btn.innerText;
 
                 btn.disabled = true;
-                btn.innerText = 'Ekleniyor...';
+                btn.innerText = id ? 'Güncelleniyor...' : 'Ekleniyor...';
 
                 try {
-                    // Check if supabase is available
-                    if (typeof window.supabase === 'undefined') {
-                        throw new Error('Supabase bağlantısı kurulamadı. config.js dosyasını kontrol edin.');
+                    const url = '../api/projects.php';
+                    // Always POST for file uploads, we will handle ID in backend
+                    const method = 'POST';
+
+                    const formData = new FormData();
+                    if (id) formData.append('id', id); // If ID exists, it's an update
+                    formData.append('title', name);
+                    formData.append('category', category);
+                    formData.append('status', status);
+                    formData.append('site_url', site_url);
+                    formData.append('download_url', download_url);
+                    formData.append('social_instagram', social_instagram);
+                    formData.append('social_facebook', social_facebook);
+                    formData.append('social_x', social_x);
+
+                    if (logoFile) {
+                        formData.append('logo', logoFile);
+                    } else if (id) {
+                        // If updating and no file selected, we might want to keep existing.
+                        // The backend should handle this: if file not sent, keep old one.
+                        // But we can also send the existing URL if we dragged it around, 
+                        // but standard file input doesn't hold value.
+                        // So we just don't append 'logo' and backend knows to keep it.
                     }
 
-                    // Insert into Supabase
-                    const { data, error } = await window.supabase
-                        .from('projects')
-                        .insert([
-                            { title: name, category: category, status: status }
-                        ])
-                        .select();
+                    const response = await fetch(url, {
+                        method: method,
+                        // Content-Type header NOT set for FormData, browser does it with boundary
+                        body: formData
+                    });
 
-                    if (error) {
-                        throw error;
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Bir hata oluştu.');
                     }
 
                     modal.classList.remove('active');
                     form.reset();
+                    // Reset ID
+                    document.getElementById('pId').value = '';
+                    // Clear file input specifically (reset handles it but good measure)
+                    document.getElementById('pLogo').value = '';
+
                     loadProjects(); // Refresh table
                 } catch (err) {
-                    console.error('Project add error:', err);
+                    console.error('Project save error:', err);
                     alert('Hata: ' + (err.message || err));
-                    if (err.message && err.message.includes('row-level security')) {
-                        alert('İPUCU: Supabase SQL Editor\'de public_access.sql kodlarını çalıştırmayı unuttunuz mu?');
-                    }
                 } finally {
                     btn.disabled = false;
-                    btn.innerText = 'Ekle';
+                    btn.innerText = 'Ekle'; // Reset to default
                 }
+            });
+        }
+
+        // Reset form when opening for new project
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                document.getElementById('pId').value = '';
+                document.querySelector('.modal-header h2').innerText = 'Yeni Proje Ekle';
+                form.querySelector('button').innerText = 'Ekle';
+                form.reset();
+                modal.classList.add('active');
             });
         }
 
@@ -175,18 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Yükleniyor...</td></tr>';
 
         try {
-            if (typeof window.supabase === 'undefined') {
-                throw new Error('Supabase başlatılamadı.');
-            }
-
-            const { data: projects, error } = await window.supabase
-                .from('projects')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                throw error;
-            }
+            const response = await fetch('../api/projects.php');
+            if (!response.ok) throw new Error('Projeler yüklenemedi.');
+            const projects = await response.json();
 
             if (!projects || projects.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Henüz proje yok.</td></tr>';
@@ -206,7 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${date}</td>
                         <td>
-                            <button class="action-btn edit-btn" data-id="${project.id}"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn edit-btn" 
+                                data-id="${project.id}" 
+                                data-title="${project.title}" 
+                                data-category="${project.category}" 
+                                data-status="${project.status}"
+                                data-logo="${project.logo_url || ''}"
+                                data-site="${project.site_url || ''}"
+                                data-download="${project.download_url || ''}"
+                                data-insta="${project.social_instagram || ''}"
+                                data-face="${project.social_facebook || ''}"
+                                data-x="${project.social_x || ''}">
+                                <i class="fas fa-edit"></i>
+                            </button>
                             <button class="action-btn delete-btn" data-id="${project.id}"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
@@ -225,26 +270,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('#messages .table-container');
 
         try {
-            const { data: messages, error } = await window.supabase
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                throw error;
-            }
+            const response = await fetch('../api/messages.php');
+            if (!response.ok) throw new Error('Mesajlar yüklenemedi.');
+            const messages = await response.json();
 
             if (messages && messages.length > 0) {
-                let html = '<div class="table-header"><h3>Gelen Mesajlar</h3></div><table class="data-table"><thead><tr><th>İsim</th><th>E-posta</th><th>Mesaj</th><th>Tarih</th></tr></thead><tbody>';
+                let html = '<div class="table-header"><h3>Gelen Mesajlar</h3></div><table class="data-table"><thead><tr><th>İsim</th><th>E-posta</th><th>Mesaj</th><th>Tarih</th><th>Durum</th></tr></thead><tbody>';
 
                 messages.forEach(msg => {
                     const date = new Date(msg.created_at).toLocaleDateString('tr-TR');
+                    const isRead = msg.is_read == 1;
+                    const statusBadge = isRead ? '<span class="status-badge status-active">Okundu</span>' : '<span class="status-badge status-pending">Okunmadı</span>';
+                    const toggleBtn = `<button class="action-btn" onclick="toggleReadStatus(${msg.id}, ${isRead ? 0 : 1})" title="${isRead ? 'Okunmadı Yap' : 'Okundu işaretle'}"><i class="fas ${isRead ? 'fa-times-circle' : 'fa-check-circle'}"></i></button>`;
+
                     html += `
                         <tr>
                             <td>${msg.name}</td>
                             <td>${msg.email}</td>
                             <td>${msg.message.substring(0, 50)}...</td>
                             <td>${date}</td>
+                            <td>
+                                ${statusBadge}
+                                ${toggleBtn}
+                            </td>
                         </tr>
                     `;
                 });
@@ -272,13 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tableBody) return;
 
         try {
-            const { data: projects, error } = await window.supabase
-                .from('projects')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(5);
-
-            if (error) throw error;
+            const response = await fetch('../api/projects.php');
+            if (!response.ok) throw new Error('Projeler yüklenemedi.');
+            const allProjects = await response.json();
+            const projects = allProjects.slice(0, 5); // Frontend-side slicing
 
             if (!projects || projects.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Henüz proje yok.</td></tr>';
@@ -309,13 +354,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadStats() {
         try {
-            // Simple counts
-            const { count: projectCount } = await window.supabase.from('projects').select('*', { count: 'exact', head: true });
-            const { count: messageCount } = await window.supabase.from('messages').select('*', { count: 'exact', head: true });
-            const { count: activeProjectCount } = await window.supabase
-                .from('projects')
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'active');
+            const [projectsRes, messagesRes] = await Promise.all([
+                fetch('../api/projects.php'),
+                fetch('../api/messages.php')
+            ]);
+
+            const projects = await projectsRes.json();
+            const messages = await messagesRes.json();
+
+            const projectCount = projects.length;
+            const messageCount = messages.length;
+            const activeProjectCount = projects.filter(p => p.status === 'active').length;
 
             // Update UI
             const activeProjectEl = document.getElementById('stat-active-projects');
@@ -327,8 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (messageCountEl) {
                 messageCountEl.innerText = messageCount || 0;
             }
-
-            // console.log('Stats:', projectCount, messageCount, activeProjectCount);
         } catch (err) {
             console.error('Stats load error:', err);
         }
@@ -343,10 +390,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (confirm('Bu projeyi silmek istediğinize emin misiniz?')) {
                     const id = this.getAttribute('data-id');
                     try {
-                        const { error } = await window.supabase.from('projects').delete().eq('id', id);
+                        const response = await fetch(`../api/projects.php?id=${id}`, {
+                            method: 'DELETE'
+                        });
 
-                        if (error) {
-                            throw error;
+                        const result = await response.json();
+
+                        if (!result.success) {
+                            throw new Error(result.error || 'Silme başarısız.');
                         }
                         this.closest('tr').remove();
                     } catch (err) {
@@ -357,9 +408,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         editBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                alert('Düzenleme özelliği henüz aktif değil.');
+            btn.addEventListener('click', function () {
+                const modal = document.getElementById('newProjectModal');
+                const form = document.getElementById('newProjectForm');
+
+                // Populate Form
+                document.getElementById('pId').value = this.getAttribute('data-id');
+                document.getElementById('pName').value = this.getAttribute('data-title');
+                document.getElementById('pCategory').value = this.getAttribute('data-category');
+                document.getElementById('pStatus').value = this.getAttribute('data-status');
+
+                // For file input, we cannot set value. 
+                // We could show a preview or text saying "Current: ..." but for now just leave empty.
+                // document.getElementById('pLogo').value = this.getAttribute('data-logo'); 
+
+                document.getElementById('pSite').value = this.getAttribute('data-site');
+                document.getElementById('pDownload').value = this.getAttribute('data-download');
+                document.getElementById('pInsta').value = this.getAttribute('data-insta');
+                document.getElementById('pFace').value = this.getAttribute('data-face');
+                document.getElementById('pX').value = this.getAttribute('data-x');
+
+                // Update UI Text
+                document.querySelector('.modal-header h2').innerText = 'Projeyi Düzenle';
+                form.querySelector('button').innerText = 'Güncelle';
+
+                modal.classList.add('active');
             });
         });
     }
+
+    // Toggle Read Status
+    window.toggleReadStatus = async (id, newStatus) => {
+        try {
+            const response = await fetch('../api/messages.php', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, is_read: newStatus })
+            });
+
+            if (!response.ok) throw new Error('Güncelleme başarısız.');
+
+            // Reload messages tab
+            const btn = document.querySelector(`[data-target="messages"]`);
+            if (btn) btn.click();
+        } catch (err) {
+            console.error(err);
+            alert('Hata: ' + err.message);
+        }
+    };
 });

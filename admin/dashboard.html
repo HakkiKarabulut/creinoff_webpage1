@@ -217,6 +217,7 @@
             </div>
             <div class="modal-body">
                 <form id="newProjectForm">
+                    <input type="hidden" id="pId">
                     <div class="form-group">
                         <label for="pName">Proje Adı</label>
                         <input type="text" id="pName" class="form-control" required>
@@ -236,6 +237,29 @@
                             <option value="active">Yayında</option>
                             <option value="pending">Geliştiriliyor</option>
                         </select>
+                    </div>
+
+                    <!-- Yeni Alanlar -->
+                    <div class="form-group">
+                        <label>Logo (Görsel Yükle)</label>
+                        <input type="file" id="pLogo" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>Site Linki</label>
+                        <input type="text" id="pSite" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>İndirme Linki</label>
+                        <input type="text" id="pDownload" class="form-control" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group" style="border-top:1px solid #eee; padding-top:10px;">
+                        <label>Sosyal Medya Linkleri</label>
+                        <input type="text" id="pInsta" class="form-control" placeholder="Instagram URL"
+                            style="margin-bottom:5px;">
+                        <input type="text" id="pFace" class="form-control" placeholder="Facebook URL"
+                            style="margin-bottom:5px;">
+                        <input type="text" id="pX" class="form-control" placeholder="X (Twitter) URL">
                     </div>
                     <button type="submit" class="btn btn-full">Ekle</button>
                 </form>

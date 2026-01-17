@@ -48,7 +48,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Form Submission with Supabase
+// Form Submission with PHP API
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
@@ -64,22 +64,19 @@ if (contactForm) {
         btn.disabled = true;
 
         try {
-            // Robust client retrieval
-            let sb = window.supabaseClient || window.supabase;
-            if (!sb && typeof supabase !== 'undefined' && window.SUPABASE_URL && window.SUPABASE_KEY) {
-                sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-                window.supabaseClient = sb;
+            const response = await fetch('api/messages.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, message }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Bir hata oluştu.');
             }
-
-            if (!sb) throw new Error('Veritabanı bağlantısı kurulamadı. Lütfen sayfayı yenileyiniz.');
-
-            const { data, error } = await sb
-                .from('messages')
-                .insert([
-                    { name: name, email: email, message: message }
-                ]);
-
-            if (error) throw error;
 
             alert('Mesajınız başarıyla alındı! Size en kısa sürede dönüş yapacağız.');
             contactForm.reset();
@@ -102,6 +99,13 @@ function bindProjectModals() {
     const modalDesc = document.getElementById('modalDesc');
     const modalCategory = document.getElementById('modalCategory');
 
+    // Action Buttons
+    const btnDownload = document.getElementById('modalDownload');
+    const btnSite = document.getElementById('modalSite');
+    const btnInsta = document.getElementById('modalInsta');
+    const btnFace = document.getElementById('modalFace');
+    const btnX = document.getElementById('modalX');
+
     projectCards.forEach(card => {
         card.addEventListener('click', (e) => {
             e.preventDefault();
@@ -111,16 +115,41 @@ function bindProjectModals() {
             const desc = card.getAttribute('data-desc');
             const category = card.getAttribute('data-category');
 
+            // New Fields
+            const siteUrl = card.getAttribute('data-site');
+            const downloadUrl = card.getAttribute('data-download');
+            const insta = card.getAttribute('data-insta');
+            const face = card.getAttribute('data-face');
+            const x = card.getAttribute('data-x');
+
             // Set data
             modalTitle.innerText = title;
             modalDesc.innerText = desc || "Detaylı açıklama bulunmuyor.";
             modalCategory.innerText = category;
 
+            // Configure Buttons
+            configureBtn(btnDownload, downloadUrl);
+            configureBtn(btnSite, siteUrl);
+            configureBtn(btnInsta, insta);
+            configureBtn(btnFace, face);
+            configureBtn(btnX, x);
+
             // Show modal
+            const modal = document.getElementById('projectModal');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent scrolling
         });
     });
+}
+
+function configureBtn(btn, url) {
+    if (!btn) return;
+    if (url && url.length > 5) { // Basic length check
+        btn.style.display = 'flex';
+        btn.href = url;
+    } else {
+        btn.style.display = 'none';
+    }
 }
 
 // Close Modal functions
@@ -160,46 +189,18 @@ async function loadPublicProjects() {
         return;
     }
 
-    // Debug: Update status
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Veri çekiliyor... (Supabase kontrol ediliyor)</div>';
+    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
 
     try {
-        let sb = window.supabaseClient || window.supabase;
-
-        // Diagnostic checks
-        if (!sb) {
-            // Try to initialize if global vars available
-            if (typeof supabase !== 'undefined' && window.SUPABASE_URL && window.SUPABASE_KEY) {
-                sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-            } else {
-                throw new Error('Supabase client not initialized. Library or Config missing.');
-            }
+        const response = await fetch('api/projects.php');
+        if (!response.ok) {
+            throw new Error(`HTTP hatası: ${response.status}`);
         }
 
-        // Check if it's the client (has .from)
-        if (typeof sb.from !== 'function') {
-            // It might be the library object if overwrite failed or config didn't run
-            if (sb.createClient && window.SUPABASE_URL && window.SUPABASE_KEY) {
-                sb = sb.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-            } else {
-                throw new Error('Invalid Supabase object found. Missing .from() method.');
-            }
-        }
-
-        // Assign back for future use
-        window.supabaseClient = sb;
-
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Veriler yükleniyor...</div>';
-
-        const { data: projects, error } = await sb
-            .from('projects')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
+        const projects = await response.json();
 
         if (!projects || projects.length === 0) {
-            container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Henüz proje bulunmuyor.</p>';
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280;"><h3>Bu kısım güncellenecek</h3><p>Projelerimiz çok yakında eklenecektir.</p></div>';
             return;
         }
 
@@ -208,14 +209,27 @@ async function loadPublicProjects() {
             const style = getCategoryStyle(project.category);
             const description = "Bu proje, " + project.category + " alanında geliştirilmiş modern bir çözümdür.";
 
+            // Logo Logic
+            let imageHtml = '';
+            if (project.logo_url && project.logo_url.length > 5) {
+                imageHtml = `<img src="${project.logo_url}" alt="${project.title}" style="width:100%; height:100%; object-fit:cover;">`;
+            } else {
+                imageHtml = `<div style="width:100%; height:100%; background: ${style.bg}; display: flex; align-items: center; justify-content: center; color: ${style.color}; font-size: 3rem;">
+                        <i class="fas ${style.icon}"></i>
+                    </div>`;
+            }
+
             const html = `
             <a href="#" class="project-card" data-title="${project.title}"
                 data-desc="${description}"
-                data-category="${project.category}">
+                data-category="${project.category}"
+                data-site="${project.site_url || ''}"
+                data-download="${project.download_url || ''}"
+                data-insta="${project.social_instagram || ''}"
+                data-face="${project.social_facebook || ''}"
+                data-x="${project.social_x || ''}">
                 <div class="project-image">
-                    <div style="width:100%; height:100%; background: ${style.bg}; display: flex; align-items: center; justify-content: center; color: ${style.color}; font-size: 3rem;">
-                        <i class="fas ${style.icon}"></i>
-                    </div>
+                    ${imageHtml}
                 </div>
                 <div class="project-info">
                     <div class="project-tags">
@@ -257,10 +271,10 @@ async function loadPublicProjects() {
         bindProjectModals();
     } catch (err) {
         console.error('Projects load error:', err);
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: red;">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Projeler yüklenirken hata oluştu.</p>
-                <small>${err.message}</small>
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280;">
+                <i class="fas fa-tools" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <h3>Bu kısım güncellenecek</h3>
+                <p>Projelerimiz çok yakında eklenecektir.</p>
             </div>`;
     }
 }
